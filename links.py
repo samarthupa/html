@@ -1,6 +1,7 @@
 import streamlit as st
 import requests
 from bs4 import BeautifulSoup
+import pandas as pd
 
 def get_internal_links(url):
     try:
@@ -40,7 +41,8 @@ def main():
                     full_link = url + link if link.startswith('/') else link
                     status_code = get_http_status(full_link)
                     table_data.append((full_link, status_code))
-                st.table(table_data, headers=['Link', 'Status Code'])
+                df = pd.DataFrame(table_data, columns=['Link', 'Status Code'])
+                st.table(df)
             else:
                 st.warning("No internal links found on the provided URL.")
 
