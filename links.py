@@ -3,42 +3,36 @@ import requests
 from bs4 import BeautifulSoup
 import re
 
-def extract_urls_from_html(html):
-    soup = BeautifulSoup(html, 'html.parser')
-    urls = set()
-    # Extract URLs from anchor tags
-    for link in soup.find_all('a', href=True):
-        urls.add(link['href'])
-    # Extract URLs from CSS
-    css_urls = re.findall(r'url\((.*?)\)', soup.text)
-    urls.update(css_urls)
-    # Extract URLs from JavaScript
-    js_urls = re.findall(r'src="(.*?)"', soup.text)
-    urls.update(js_urls)
-    return urls
-
-def process_url(url):
+def get_internal_links(url):
     try:
         response = requests.get(url)
-        if response.status_code == 200:
-            st.success(f"Successfully fetched URL: {url}")
-            extracted_urls = extract_urls_from_html(response.text)
-            st.write("Extracted URLs from the page:")
-            for extracted_url in extracted_urls:
-                st.write(extracted_url)
-        else:
-            st.error(f"Failed to fetch URL: {url}. Status code: {response.status_code}")
+        soup = BeautifulSoup(response.text, 'html.parser')
+        internal_links = set()
+        # Find all anchor tags with 'href' attribute
+        for link in soup.find_all('a', href=True):
+            href = link['href']
+            # Check if the link is internal
+            if href.startswith('/') or url in href:
+                internal_links.add(href)
+        return internal_links
     except Exception as e:
-        st.error(f"An error occurred: {str(e)}")
+        st.error(f"An error occurred: {e}")
 
 def main():
-    st.title("URL Extractor")
-    url = st.text_input("Enter a URL:")
-    if st.button("Extract URLs"):
-        if url:
-            process_url(url)
-        else:
+    st.title("Internal Links Extractor")
+    url = st.text_input("Enter the URL:")
+    if st.button("Extract Internal Links"):
+        if not url:
             st.warning("Please enter a URL.")
+        else:
+            st.info("Processing...")
+            internal_links = get_internal_links(url)
+            if internal_links:
+                st.success("Internal links found:")
+                for link in internal_links:
+                    st.markdown(f"- [{link}]({url + link})")
+            else:
+                st.warning("No internal links found on the provided URL.")
 
 if __name__ == "__main__":
     main()
