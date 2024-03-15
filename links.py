@@ -1,7 +1,6 @@
 import streamlit as st
 import requests
 from bs4 import BeautifulSoup
-import re
 
 def get_internal_links(url):
     try:
@@ -18,6 +17,13 @@ def get_internal_links(url):
     except Exception as e:
         st.error(f"An error occurred: {e}")
 
+def get_http_status(url):
+    try:
+        response = requests.get(url)
+        return response.status_code
+    except Exception as e:
+        return str(e)
+
 def main():
     st.title("Internal Links Extractor")
     url = st.text_input("Enter the URL:")
@@ -29,8 +35,12 @@ def main():
             internal_links = get_internal_links(url)
             if internal_links:
                 st.success("Internal links found:")
+                table_data = []
                 for link in internal_links:
-                    st.markdown(f"- [{link}]({url + link})")
+                    full_link = url + link if link.startswith('/') else link
+                    status_code = get_http_status(full_link)
+                    table_data.append((full_link, status_code))
+                st.table(table_data, headers=['Link', 'Status Code'])
             else:
                 st.warning("No internal links found on the provided URL.")
 
