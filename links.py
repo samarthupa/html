@@ -7,7 +7,7 @@ from urllib.parse import urljoin, urlparse
 def extract_links(url):
     options = webdriver.ChromeOptions()
     options.add_argument('headless')  # Run Chrome in headless mode
-    driver_version = '92.0.4515.43'  # Specify the Chrome WebDriver version
+    driver_version = '111.0.5563.64'  # Specify the Chrome WebDriver version
     driver = webdriver.Chrome(ChromeDriverManager(version=driver_version).install(), options=options)
     driver.get(url)
 
