@@ -1,18 +1,26 @@
 import streamlit as st
-from requests_html import HTMLSession
+from selenium import webdriver
+from webdriver_manager.chrome import ChromeDriverManager
 from urllib.parse import urljoin, urlparse
 
 # Function to extract links from the webpage
 def extract_links(url):
-    session = HTMLSession()
-    response = session.get(url)
-    response.html.render()
+    options = webdriver.ChromeOptions()
+    options.add_argument('headless')  # Run Chrome in headless mode
+    driver = webdriver.Chrome(ChromeDriverManager().install(), options=options)
+    driver.get(url)
 
     links = []
 
     # Extracting <a> tags
-    for link in response.html.absolute_links:
-        links.append(link)
+    elements = driver.find_elements_by_tag_name('a')
+    for element in elements:
+        href = element.get_attribute('href')
+        # Handling relative URLs
+        if href:
+            links.append(urljoin(url, href))
+
+    driver.quit()
 
     return links
 
